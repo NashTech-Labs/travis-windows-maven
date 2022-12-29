@@ -1,0 +1,40 @@
+branches:
+  only:
+    - main
+
+os:
+  - windows
+
+language: shell
+
+jdk:
+  - openjdk11
+
+env:
+  - GRAALVM_VERSION="20.2.0"
+
+before_install:
+  - |
+    if [ "$TRAVIS_OS_NAME" = "windows" ]; then 
+      choco install maven;
+      refreshenv;
+    fi;
+
+install:
+  - |
+    if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then
+        DOWNLOAD_OS_NAME="windows";
+        curl -LJ "https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-$GRAALVM_VERSION/graalvm-ce-java11-$DOWNLOAD_OS_NAME-amd64-$GRAALVM_VERSION.zip" --output graalvm.zip;
+        7z.exe x graalvm.zip;
+    fi;
+
+script:
+  - export GRAALVM_HOME="$(pwd)/graalvm-ce-java11-$GRAALVM_VERSION"
+  - export JAVA_HOME="$GRAALVM_HOME"
+  - |
+    if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then
+        maven="$(find 'C:\ProgramData\chocolatey\lib\maven' -name mvn | head -n1)";
+    else
+        maven="mvn";
+    fi;
+  - $maven clean
